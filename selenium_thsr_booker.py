@@ -1,4 +1,5 @@
 import time
+from pprint import pprint
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.select import Select  # 下拉式選單使用
@@ -11,6 +12,10 @@ options.add_argument("--disable-blink-features=AutomationControlled")
 driver = webdriver.Chrome(options=options)
 driver.get("https://irs.thsrc.com.tw/IMINT/")
 
+
+"""
+第一個頁面 "查詢車次"
+"""
 
 # 台灣高鐵網路訂票系統個人資料使用說明, 點擊'我同意'
 accept_cookie_button = driver.find_element(By.ID, "cookieAccpetBtn")
@@ -42,15 +47,96 @@ while True:
     # 開始查詢
     submit_button = driver.find_element(By.ID, 'SubmitButton')
     submit_button.click()
-    time.sleep(5)
 
     # Check validation is success or not
     try:
-        #driver.find_element(By.CLASS_NAME, 'uk-alert-danger uk-alert')
-        driver.find_element(By.ID, 'divErrMSG')
-    except NoSuchElementException:
-        print("進到第二步驟")
+        time.sleep(5)
+        driver.find_element(By.ID, 'BookingS2Form_TrainQueryDataViewPanel')
+        print("驗證碼正確,進到第二步驟")
         break
+    except NoSuchElementException:
+        print("驗證碼錯誤")
+
+
+
+
+"""
+第二個頁面 "選擇車次"
+"""
+
+trains_info = list()
+trains = driver.find_element(By.CLASS_NAME, 'result-listing').find_elements(By.TAG_NAME, 'label')
+for train in trains:
+    # depart_time = train.find_element(By.ID, 'QueryDeparture').text
+    # arrival_time = train.find_element(By.ID, 'QueryArrival').text
+    # duration = train.find_element(
+    #     By.CLASS_NAME, 'duration').find_elements(By.TAG_NAME, 'span')[1].text
+    # train_code = train.find_element(By.ID, 'QueryCode').text
+    # radio_box = train.find_element(By.CLASS_NAME, 'uk-radio')
+    info = train.find_element(By.CLASS_NAME, 'uk-radio')
+
+    trains_info.append(
+        {
+            # .get_attribute 從一個元素中提取各種屬性
+            'depart_time': info.get_attribute('querydeparture'),
+            'arrival_time': info.get_attribute('queryarrival'),
+            'duration': info.get_attribute('queryestimatedtime'),
+            'train_code': info.get_attribute('querycode'),
+            'radio_box': info,
+        }
+    )
+
+pprint(trains_info)
+
+# Choose train
+for idx, train in enumerate(trains_info):
+    print(
+        f"({idx}) - {train['train_code']}, 行駛時間={train['duration']} | {train['depart_time']} -> {train['arrival_time']}")
+
+which_train = int(input("Choose your train. Enter from 0~9:\n"))
+trains_info[which_train]['radio_box'].click()
+
+# Submit booking requests
+driver.find_element(By.NAME, 'SubmitButton').click()
+print("選擇成功, 進到第三步驟")
+
+
+
+"""
+第三個頁面 "取票資訊"
+"""
+print("確認訂票: ")
+print(
+    f"車次: {trains_info[which_train]['train_code']} | \
+    行駛時間: {trains_info[which_train]['duration']} | \
+    {trains_info[which_train]['depart_time']} -> \
+    {trains_info[which_train]['arrival_time']}"
+)
+print('您的車票共 ', driver.find_element(By.ID, 'TotalPrice').text, " 元")
+driver.find_element(By.CLASS_NAME, 'ticket-summary').screenshot('thsr_summary.png')
+
+id_number = input("請輸入你的身分證: ")
+id_input = driver.find_element(By.ID, 'idNumber')
+id_input.send_keys(id_number)
+
+phone_number = input("請輸入你的手機號碼: ")
+phone_input = driver.find_element(By.ID, 'mobilePhone')
+phone_input.send_keys(phone_number)
+
+mail = input("請輸入你的電子郵件: ")
+mail_input = driver.find_element(By.ID, 'email')
+mail_input.send_keys(mail)
+
+# 勾選我已明確了解
+driver.find_element(By.NAME, 'agree').click()
+
+# 按完成訂位
+driver.find_element(By.ID, 'isSubmit').click()
+
+
+
+
+
 
 
 time.sleep(2000)
