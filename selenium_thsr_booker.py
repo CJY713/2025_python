@@ -1,4 +1,5 @@
 import time
+import os
 from pprint import pprint
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -115,16 +116,19 @@ print(
 print('您的車票共 ', driver.find_element(By.ID, 'TotalPrice').text, " 元")
 driver.find_element(By.CLASS_NAME, 'ticket-summary').screenshot('thsr_summary.png')
 
-id_number = input("請輸入你的身分證: ")
 id_input = driver.find_element(By.ID, 'idNumber')
+id_number = input("請輸入你的身分證: ")
+#id_number = os.getenv('Personal_ID')      # 從環境變數拿   # 打開電腦的'編輯系統環境變數'新增'Personal_ID'
 id_input.send_keys(id_number)
 
-phone_number = input("請輸入你的手機號碼: ")
 phone_input = driver.find_element(By.ID, 'mobilePhone')
+phone_number = input("請輸入你的手機號碼: ")
+#phone_number = os.getenv('Personal_phone')      # 從環境變數拿
 phone_input.send_keys(phone_number)
 
-mail = input("請輸入你的電子郵件: ")
 mail_input = driver.find_element(By.ID, 'email')
+mail = input("請輸入你的電子郵件: ")
+#mail = os.getenv('Personal_email')      # 從環境變數拿
 mail_input.send_keys(mail)
 
 # 勾選我已明確了解
