@@ -1,3 +1,4 @@
+## git 指令
 * 顯示目前Git版控狀態
     > git status
 
@@ -12,8 +13,14 @@
 
 * 上傳到remote
     > git push
+
     > git push <remote_name> <remote_branch>
 
 * 下載(同步)目前的雲端的版本
     > git pull
+
     > git pull <remote_name> <remote_branch> 
+
+    > git pull --rebase
+    
+    > git pull --rebase <remote_name> <remote_branch>
