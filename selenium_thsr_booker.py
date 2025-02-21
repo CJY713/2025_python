@@ -137,7 +137,10 @@ driver.find_element(By.NAME, 'agree').click()
 # 按完成訂位
 driver.find_element(By.ID, 'isSubmit').click()
 
-
+# Save booking result
+driver.find_element(
+    By.CLASS_NAME, 'ticket-summary').screenshot('thsr_booking_result.png')
+print("訂票完成!")
 
 
 
