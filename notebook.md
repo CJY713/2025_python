@@ -1,6 +1,6 @@
 # 課堂筆記
 
-### 創建虛擬環境
+### **創建虛擬環境**
 
 * 下載 virtualenv
     > pip install virtualenv
@@ -32,7 +32,7 @@
     > Set-ExecutionPolicy Unrestricted -Scope LocalMachine
 
 
-### git 指令
+### **git 指令**
 * 顯示目前Git版控狀態
     > git status
 
@@ -58,5 +58,17 @@
     > git pull --rebase
     
     > git pull --rebase <remote_name> <remote_branch>
+
+
+### **flask**
+1. 執行你的Flask App, 使其運行在你的本地電腦
+    (http://127.0.0.1:5000)
+    > flask --app <你的應用程式檔案名稱, 不用.py> run
+
+    > python .\<你的應用程式檔案名稱>
+
+* CMD 按下 Ctrl+C 就能使其離開
+
+
 
 
