@@ -22,11 +22,14 @@ from linebot.v3.webhooks import (
 
 import os
 
+# my tools
+from chatgpt_sample import chat_with_chatgpt
+
 app = Flask(__name__)
 
 # 從環境變數裏頭取得acess token 與 channel secret
 configuration = Configuration(access_token=os.getenv('LINE_CHANNEL_ACESS_TOKEN'))
-handler = WebhookHandler(os.getenv('LINE_CHANNEL_ACESS_TOKEN'))
+handler = WebhookHandler(os.getenv('LINE_CHANNEL_SECRET'))
 
 
 @app.route("/callback", methods=['POST'])
@@ -57,10 +60,14 @@ def handle_message(event):
                 reply_token=event.reply_token,
                 messages=[
                     # 這邊是你要回復給使用者的內容
-                    TextMessage(text=event.message.text)
-                    ]
+                    TextMessage(text=chat_with_chatgpt(
+                        user_message=event.message.text,
+                        system_prompt="你是一個講笑話大師。"
+                    )
+                    )
+                ]
             )
         )
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
