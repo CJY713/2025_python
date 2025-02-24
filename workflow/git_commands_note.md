@@ -24,3 +24,12 @@
     > git pull --rebase
     
     > git pull --rebase <remote_name> <remote_branch>
+
+* 移動檔案位置
+    > git mv <檔案的原始路徑> <新位置>
+
+* 刪除檔案
+    > git rm <你的檔案路徑>
+
+
+
