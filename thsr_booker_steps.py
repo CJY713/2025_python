@@ -11,7 +11,8 @@ from ocr_component import get_captcha_code
 from booking_info_extraction_flow import (
     ask_booking_information,
     ask_missing_information,
-    convert_date_to_thsr_format)
+    convert_date_to_thsr_format
+)
 
 
 def create_driver():
@@ -42,8 +43,7 @@ def booking_with_info(start_station, dest_station, start_time, start_date):
     Select(start_time_element).select_by_visible_text(start_time)
 
     # Choose Booking parameters: date
-    driver.find_element(
-        By.XPATH, "//input[@class='uk-input' and @readonly='readonly']").click()
+    driver.find_element(By.XPATH, "//input[@class='uk-input' and @readonly='readonly']").click()
 
     # Choose Booking date: 包含今天與其他天
     driver.find_element(
@@ -76,7 +76,8 @@ def booking_with_info(start_station, dest_station, start_time, start_date):
     # 第二個頁面
     #
     trains_info = list()
-    trains = driver.find_element(By.CLASS_NAME, 'result-listing').find_elements(By.TAG_NAME, 'label')
+    trains = driver.find_element(
+        By.CLASS_NAME, 'result-listing').find_elements(By.TAG_NAME, 'label')
     for train in trains:
         info = train.find_element(By.CLASS_NAME, 'uk-radio')
         trains_info.append(
@@ -101,9 +102,12 @@ def booking_with_info(start_station, dest_station, start_time, start_date):
     return trains_info
 
 
-def select_train_and_submit_booking(trains_info):
+def select_train_and_submit_booking(trains_info, which_train=None):
 
-    which_train = int(input("Choose your train. Enter from 0~9: "))
+    if which_train is None:
+        # 如果沒有選擇車次，則由使用者選擇(一般程式的執行流程，採用CMD輸入)
+        which_train = int(input("Choose your train. Enter from 0~9: "))
+
     trains_info[which_train]['radio_box'].click()
 
     # Submit booking requests
@@ -142,12 +146,13 @@ def select_train_and_submit_booking(trains_info):
     driver.find_element(By.CLASS_NAME, 'ticket-summary').screenshot(screenshot_filename)
     print("訂票完成!")
 
+    driver.quit()
     return screenshot_filename
 
 
 if __name__ == "__main__":
 
-    # # Booking parameters
+    # Booking parameters
     # start_station = '台中'
     # dest_station = '板橋'
     # start_time = '18:00'
@@ -155,10 +160,8 @@ if __name__ == "__main__":
 
     # Step 1
     booking_info = ask_booking_information()
-
     # Step 2
     booking_info = ask_missing_information(booking_info)
-
     # Step 3：調整日期格式以便爬蟲使用, ex: '2025/02/25' -> '二月 25, 2025'
     booking_info = convert_date_to_thsr_format(booking_info)
 
@@ -166,17 +169,13 @@ if __name__ == "__main__":
 
     # Step 4
     trains_info = booking_with_info(
-        start_station = booking_info['出發站'], 
-        dest_station = booking_info['到達站'],
-        start_time = booking_info['出發時辰'], 
-        start_date = booking_info['出發日期'])
+        start_station=booking_info['出發站'],
+        dest_station=booking_info['到達站'],
+        start_time=booking_info['出發時辰'],
+        start_date=booking_info['出發日期'])
 
     # Step 5
     select_train_and_submit_booking(trains_info)
-
-    time.sleep(10)
-    driver.quit()
-
 
 
 

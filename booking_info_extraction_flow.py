@@ -73,6 +73,7 @@ def convert_date_to_thsr_format(booking_info):
     print(booking_info)
     return booking_info
 
+
 if __name__ == '__main__':
     # Step 1
     booking_info = ask_booking_information()
