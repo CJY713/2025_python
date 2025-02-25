@@ -5,7 +5,13 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.select import Select  # 下拉式選單使用
 from selenium.common.exceptions import NoSuchElementException  # Handle exception
+
+# Project modules
 from ocr_component import get_captcha_code
+from booking_info_extraction_flow import (
+    ask_booking_information,
+    ask_missing_information,
+    convert_date_to_thsr_format)
 
 
 def create_driver():
@@ -29,8 +35,7 @@ def booking_with_info(start_station, dest_station, start_time, start_date):
     start_station_element = driver.find_element(By.NAME, 'selectStartStation')
     Select(start_station_element).select_by_visible_text(start_station)
 
-    dest_station_element = driver.find_element(
-        By.NAME, 'selectDestinationStation')
+    dest_station_element = driver.find_element(By.NAME, 'selectDestinationStation')
     Select(dest_station_element).select_by_visible_text(dest_station)
 
     start_time_element = driver.find_element(By.NAME, 'toTimeTable')
@@ -40,13 +45,15 @@ def booking_with_info(start_station, dest_station, start_time, start_date):
     driver.find_element(
         By.XPATH, "//input[@class='uk-input' and @readonly='readonly']").click()
 
+    # Choose Booking date: 包含今天與其他天
     driver.find_element(
-        By.XPATH, f"//span[@class='flatpickr-day' and @aria-label='{start_date}']").click()
+        By.XPATH,
+        f"//span[(@class='flatpickr-day' or @class='flatpickr-day today selected') and @aria-label='{start_date}']"
+    ).click()
 
     while True:
         # captcha
-        captcha_img = driver.find_element(
-            By.ID, 'BookingS1Form_homeCaptcha_passCode')
+        captcha_img = driver.find_element(By.ID, 'BookingS1Form_homeCaptcha_passCode')
         captcha_img.screenshot('captcha.png')
         captcha_code = get_captcha_code()
         captcha_input = driver.find_element(By.ID, 'securityCode')
@@ -69,8 +76,7 @@ def booking_with_info(start_station, dest_station, start_time, start_date):
     # 第二個頁面
     #
     trains_info = list()
-    trains = driver.find_element(
-        By.CLASS_NAME, 'result-listing').find_elements(By.TAG_NAME, 'label')
+    trains = driver.find_element(By.CLASS_NAME, 'result-listing').find_elements(By.TAG_NAME, 'label')
     for train in trains:
         info = train.find_element(By.CLASS_NAME, 'uk-radio')
         trains_info.append(
@@ -108,8 +114,7 @@ def select_train_and_submit_booking(trains_info):
     # 第三個頁面
     #
     # Check booking infomation for user
-    driver.find_element(
-        By.CLASS_NAME, 'ticket-summary').screenshot('thsr_summary.png')
+    driver.find_element(By.CLASS_NAME, 'ticket-summary').screenshot('thsr_summary.png')
 
     # Enter personal detail
     input_personal_id = driver.find_element(By.ID, 'idNumber')
@@ -134,8 +139,7 @@ def select_train_and_submit_booking(trains_info):
 
     # Save booking result
     screenshot_filename = 'thsr_booking_result.png'
-    driver.find_element(
-        By.CLASS_NAME, 'ticket-summary').screenshot(screenshot_filename)
+    driver.find_element(By.CLASS_NAME, 'ticket-summary').screenshot(screenshot_filename)
     print("訂票完成!")
 
     return screenshot_filename
@@ -143,22 +147,36 @@ def select_train_and_submit_booking(trains_info):
 
 if __name__ == "__main__":
 
-    # Booking parameters
-    start_station = '台中'
-    dest_station = '板橋'
-    start_time = '18:00'
-    start_date = '二月 25, 2025'
+    # # Booking parameters
+    # start_station = '台中'
+    # dest_station = '板橋'
+    # start_time = '18:00'
+    # start_date = '二月 25, 2025'
+
+    # Step 1
+    booking_info = ask_booking_information()
+
+    # Step 2
+    booking_info = ask_missing_information(booking_info)
+
+    # Step 3：調整日期格式以便爬蟲使用, ex: '2025/02/25' -> '二月 25, 2025'
+    booking_info = convert_date_to_thsr_format(booking_info)
 
     create_driver()
 
-    # Step 1, 2
+    # Step 4
     trains_info = booking_with_info(
-        start_station, dest_station, start_time, start_date)
+        start_station = booking_info['出發站'], 
+        dest_station = booking_info['到達站'],
+        start_time = booking_info['出發時辰'], 
+        start_date = booking_info['出發日期'])
 
-    # Step 3, 4
+    # Step 5
     select_train_and_submit_booking(trains_info)
 
     time.sleep(10)
     driver.quit()
+
+
 
 
